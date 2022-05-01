@@ -38,16 +38,23 @@ async function run(){
     // get single product
     app.get('/product/:id', async(req, res) => {
       const id = req.params.id;
-      const query = { _id: id };
+      const query = { _id: ObjectId(id) };
       const product = await productCollection.findOne(query);
       res.send(product);
+    })
+
+    // insert a product
+    app.post('/upload', async(req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
     })
 
     // update quantity
     app.put('/product/:id', async(req, res) => {
       const deliveredProduct = req.body;
       const id = req.params.id;
-      const filter = {_id: id};
+      const filter = {_id: ObjectId(id)};
       const options = { upsert: true };
 
       const updateDoc = {
