@@ -20,11 +20,20 @@ async function run(){
     const productCollection = client.db('proTech').collection('product');
 
     // get all products
+    app.get('/all-products', async(req, res) => {
+      const query = {};
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    });
+
+    // get 6 products
     app.get('/products', async(req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.limit(6).toArray();
       res.send(products);
+    });
 
     // get single product
     app.get('/product/:id', async(req, res) => {
@@ -50,7 +59,14 @@ async function run(){
         res.send(result);
     })
 
-  });
+    // delete product
+    app.delete('/product/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: ObjectId(id)};
+      const result = await productCollection.deleteOne(query);
+      res.send(result);
+    })
+
 
   }
   finally{
