@@ -43,6 +43,16 @@ async function run(){
       res.send(product);
     })
 
+    // get added product
+    app.get('/my-product', async(req, res) => {
+      const email = req.query.email;
+
+          const query = {email:email};
+          const cursor = productCollection.find(query);
+          const myProducts = await cursor.toArray();
+          res.send(myProducts);
+  })
+
     // insert a product
     app.post('/upload', async(req, res) => {
       const product = req.body;
