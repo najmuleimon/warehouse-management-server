@@ -12,14 +12,13 @@ app.use(express.json());
 function verifyJWT(req, res, next){
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-      return res.status(401).send({ message: 'unauthorized access' });
+      return res.status(401).send({ message: 'Unauthorized access!' });
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
       if (err) {
-          return res.status(403).send({ message: 'Forbidden access' });
+          return res.status(403).send({ message: 'Forbidden access!' });
       }
-      console.log('decoded', decoded);
       req.decoded = decoded;
       next();
   })
@@ -43,11 +42,25 @@ async function run(){
       res.send({accessToken});
     })
 
+    // product count for pagination
+    app.get('/productCount', async(req, res) => {
+      const count = await productCollection.estimatedDocumentCount();
+      res.send({count});
+    })
+
     // get all products
     app.get('/all-products', async(req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
       const query = {};
       const cursor = productCollection.find(query);
-      const products = await cursor.toArray();
+      let products;
+      if(page || size){
+        products = await cursor.skip(page * size).limit(size).toArray();
+      }
+      else{
+        products = await cursor.toArray();
+      }
       res.send(products);
     });
 
@@ -79,9 +92,9 @@ async function run(){
         res.send(myProducts);
       }
       else{
-        res.status(403).send({message: 'forbidden access'})
+        res.status(403).send({message: 'Forbidden access!'})
       }
-  })
+    })
 
     // insert a product
     app.post('/upload', async(req, res) => {
@@ -112,6 +125,7 @@ async function run(){
       const query = {_id: ObjectId(id)};
       const result = await productCollection.deleteOne(query);
       res.send(result);
+      
     })
 
 
